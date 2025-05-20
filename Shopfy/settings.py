@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'reports',
     'shipping',
     'accounts',
+    'pages',
 ]
 
 MIDDLEWARE = [

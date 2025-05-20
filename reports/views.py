@@ -118,7 +118,16 @@ def export_sales_csv(request, report_id):
 
 @user_passes_test(is_admin)
 def product_report(request):
-    products = Product.objects.all()
+    # Ambil semua produk sebagai QuerySet
+    product_queryset = Product.objects.all()
+    
+    # Hitung statistik inventaris dari QuerySet sebelum diubah menjadi list
+    total_products = product_queryset.count()
+    out_of_stock = product_queryset.filter(stock=0).count()
+    low_stock = product_queryset.filter(stock__gt=0, stock__lte=10).count()
+    
+    # Ubah QuerySet menjadi list dan tambahkan properti tambahan
+    products = list(product_queryset)
     
     # Menghitung data untuk laporan
     for product in products:
@@ -132,11 +141,6 @@ def product_report(request):
     
     # Urutkan produk berdasarkan total pendapatan (dari tertinggi ke terendah)
     products = sorted(products, key=lambda p: p.total_revenue, reverse=True)
-    
-    # Menghitung statistik inventaris
-    total_products = products.count()
-    out_of_stock = products.filter(stock=0).count()
-    low_stock = products.filter(stock__gt=0, stock__lte=10).count()
     
     report = Report.objects.create(
         title='Laporan Produk',

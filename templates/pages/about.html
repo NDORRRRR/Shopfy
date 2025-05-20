@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Tentang Kami | KOPAG E-COMMERCE{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Tentang Kami</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <img src="/static/images/logo.png" alt="KOPAG E-COMMERCE Logo" class="img-fluid mb-3" style="max-width: 200px;">
+                        <h3>Selamat Datang di KOPAG E-COMMERCE</h3>
+                        <p class="lead">Platform jual beli online terpercaya untuk semua kebutuhan Anda.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4>Visi Kami</h4>
+                        <p>Menjadi platform e-commerce terdepan yang menyediakan pengalaman belanja online terbaik dengan mengutamakan kualitas produk, pelayanan pelanggan, dan inovasi teknologi.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4>Misi Kami</h4>
+                        <ul>
+                            <li>Menyediakan produk berkualitas dengan harga terbaik</li>
+                            <li>Memberikan pelayanan pelanggan yang prima</li>
+                            <li>Mengembangkan platform yang aman, cepat, dan mudah digunakan</li>
+                            <li>Mendukung pertumbuhan UMKM dan produsen lokal</li>
+                            <li>Membangun komunitas pelanggan yang loyal</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4>Sejarah Kami</h4>
+                        <p>KOPAG E-COMMERCE didirikan pada tahun 2023 dengan tujuan untuk menyediakan platform belanja online yang mudah, aman, dan terpercaya. Kami memulai perjalanan kami dengan menjual beberapa produk lokal pilihan, dan terus berkembang hingga memiliki berbagai kategori produk seperti yang Anda lihat saat ini.</p>
+                        <p>Sejak awal berdiri, kami telah berkomitmen untuk memberikan layanan terbaik bagi pelanggan dan mitra penjual kami. Kami percaya bahwa dengan menjaga kualitas produk dan layanan, kami dapat terus tumbuh dan memberikan manfaat bagi semua pihak.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4>Tim Kami</h4>
+                        <p>KOPAG E-COMMERCE didukung oleh tim profesional yang berdedikasi untuk memberikan pengalaman belanja online terbaik:</p>
+                        <div class="row mt-3">
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-tie fa-3x mb-3 text-primary"></i>
+                                        <h5>Adhim Musafak</h5>
+                                        <p class="text-muted">Founder & CEO</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-cog fa-3x mb-3 text-primary"></i>
+                                        <h5>Tim Developer</h5>
+                                        <p class="text-muted">Pengembangan Platform</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-headset fa-3x mb-3 text-primary"></i>
+                                        <h5>Tim Support</h5>
+                                        <p class="text-muted">Layanan Pelanggan</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4>Hubungi Kami</h4>
+                        <p>Jika Anda memiliki pertanyaan atau masukan, jangan ragu untuk <a href="{% url 'contact' %}">menghubungi kami</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
