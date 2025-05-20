@@ -71,18 +71,34 @@ def profile_view(request):
     return render(request, 'accounts/profile.html', context)
 
 @login_required
+@login_required
 def update_profile(request):
     if request.method == 'POST':
-        # Process form data
         user = request.user
         user.first_name = request.POST.get('first_name', '')
         user.last_name = request.POST.get('last_name', '')
+        user.email = request.POST.get('email', '')
         user.save()
         
+        # Update customer profile
+        customer = user.customer
+        customer.phone_number = request.POST.get('phone', '')
+        
+        # Handle profile picture upload
+        if 'profile_picture' in request.FILES:
+            # Hapus foto lama jika ada
+            if customer.profile_picture:
+                import os
+                if os.path.isfile(customer.profile_picture.path):
+                    os.remove(customer.profile_picture.path)
+            
+            customer.profile_picture = request.FILES['profile_picture']
+        
+        customer.save()
+        
         messages.success(request, 'Profile updated successfully!')
-        return redirect('accounts:profile')  # Redirect to the profile page
+        return redirect('accounts:profile')
     
-    # If not POST, redirect to profile page
     return redirect('accounts:profile')
 
 @login_required
