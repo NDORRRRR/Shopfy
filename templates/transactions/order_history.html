@@ -1,6 +1,185 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Checkout{% endblock %}
+{% block title %}Riwayat Transaksi{% endblock %}
 
 {% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Riwayat Transaksi</h2>
+    
+    {% if orders %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="accordion" id="orderAccordion">
+                    {% for order in orders %}
+                        <div class="accordion-item mb-3">
+                            <h2 class="accordion-header" id="heading{{ order.id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ order.id }}" aria-expanded="false" aria-controls="collapse{{ order.id }}">
+                                    <div class="d-flex justify-content-between w-100">
+                                        <div>
+                                            <strong>Order #{{ order.order_number }}</strong>
+                                        </div>
+                                        <div class="me-3">
+                                            <span class="badge {% if order.status == 'COMPLETED' %}bg-success{% elif order.status == 'PROCESSING' %}bg-warning{% elif order.status == 'CANCELED' %}bg-danger{% else %}bg-info{% endif %}">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </div>
+                                        <div class="text-muted">
+                                            {{ order.created_at|date:"d M Y, H:i" }}
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ order.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ order.id }}" data-bs-parent="#orderAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Detail Pesanan</h5>
+                                            <table class="table table-sm">
+                                                <tr>
+                                                    <td>Tanggal Pesanan</td>
+                                                    <td>{{ order.created_at|date:"d M Y, H:i" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Status</td>
+                                                    <td>
+                                                        <span class="badge {% if order.status == 'COMPLETED' %}bg-success{% elif order.status == 'PROCESSING' %}bg-warning{% elif order.status == 'CANCELED' %}bg-danger{% else %}bg-info{% endif %}">
+                                                            {{ order.get_status_display }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total Pembayaran</td>
+                                                    <td>Rp{{ order.total_amount }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Metode Pembayaran</td>
+                                                    <td>{{ order.payment_method }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5>Informasi Pengiriman</h5>
+                                            <table class="table table-sm">
+                                                <tr>
+                                                    <td>Nama Penerima</td>
+                                                    <td>{{ order.shipping_name }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Alamat</td>
+                                                    <td>{{ order.shipping_address }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Kota</td>
+                                                    <td>{{ order.shipping_city }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Kode Pos</td>
+                                                    <td>{{ order.shipping_zip_code }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mt-3">Item Pesanan</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Produk</th>
+                                                    <th>Harga Satuan</th>
+                                                    <th>Jumlah</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in order.orderitem_set.all %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            {% if item.product.image %}
+                                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-thumbnail me-2" style="max-width: 50px;">
+                                                            {% else %}
+                                                                <div class="bg-light me-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                                                    <i class="fas fa-image text-muted"></i>
+                                                                </div>
+                                                            {% endif %}
+                                                            <div>
+                                                                <a href="{% url 'products:product_detail' item.product.id %}">{{ item.product.name }}</a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>Rp{{ item.price_per_item }}</td>
+                                                    <td>{{ item.quantity }}</td>
+                                                    <td>Rp{{ item.total_price }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th colspan="3" class="text-end">Subtotal</th>
+                                                    <th>Rp{{ order.subtotal }}</th>
+                                                </tr>
+                                                <tr>
+                                                    <th colspan="3" class="text-end">Biaya Pengiriman</th>
+                                                    <th>Rp{{ order.shipping_cost }}</th>
+                                                </tr>
+                                                <tr>
+                                                    <th colspan="3" class="text-end">Total</th>
+                                                    <th>Rp{{ order.total_amount }}</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-end mt-3">
+                                        {% if order.status == 'PROCESSING' %}
+                                            <a href="{% url 'transactions:order_cancel' order.id %}" class="btn btn-danger me-2" onclick="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')">
+                                                <i class="fas fa-times"></i> Batalkan Pesanan
+                                            </a>
+                                        {% endif %}
+                                        <a href="{% url 'transactions:order_detail' order.id %}" class="btn btn-primary">
+                                            <i class="fas fa-eye"></i> Lihat Detail
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-shopping-bag fa-4x text-muted mb-3"></i>
+                <h4>Belum Ada Transaksi</h4>
+                <p class="text-muted">Anda belum memiliki riwayat transaksi.</p>
+                <a href="{% url 'products:product_list' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-shopping-cart"></i> Mulai Belanja
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add animation to the orders when they expand
+    const accordionButtons = document.querySelectorAll('.accordion-button');
+    accordionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const target = document.querySelector(this.getAttribute('data-bs-target'));
+            if (target.classList.contains('show')) {
+                target.style.transition = 'all 0.3s ease-out';
+            } else {
+                target.style.transition = 'all 0.3s ease-in';
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% endblock %}
