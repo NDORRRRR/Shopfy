@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil Saya - KOPAG E-COMMERCE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        padding: 20px 0;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 30px;
+    }
+    .profile-picture {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid #f8f9fa;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .profile-card {
+        transition: all 0.3s;
+    }
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .nav-pills .nav-link.active {
+        background-color: #0d6efd;
+    }
+    .nav-pills .nav-link {
+        color: #0d6efd;
+    }
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    .card-header {
+        background-color: #0d6efd;
+        color: white;
+        font-weight: bold;
+    }
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .btn-outline-primary {
+        color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .btn-outline-primary:hover {
+        background-color: #0d6efd;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-header text-center">
+    <h2>Profil Saya</h2>
+    <p class="text-muted">Kelola informasi profil dan pengaturan akun Anda</p>
+</div>
+
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 mb-4">
+        <div class="card profile-card">
+            <div class="card-body text-center">
+                {% if user.profile.photo %}
+                    <img src="{{ user.profile.photo.url }}" alt="Foto Profil" class="profile-picture mb-3">
+                {% else %}
+                    <img src="https://via.placeholder.com/150" alt="Foto Profil Default" class="profile-picture mb-3">
+                {% endif %}
+                <h5 class="card-title">{{ user.get_full_name|default:user.username }}</h5>
+                <p class="text-muted">{{ user.email }}</p>
+                <p class="text-muted small">Anggota sejak: {{ user.date_joined|date:"d M Y" }}</p>
+            </div>
+        </div>
+
+        <div class="list-group mt-4">
+            <div class="nav flex-column nav-pills" id="profile-tab" role="tablist">
+                <button class="nav-link active" id="personal-info-tab" data-bs-toggle="pill" data-bs-target="#personal-info" type="button" role="tab">
+                    <i class="fas fa-user-circle me-2"></i> Informasi Pribadi
+                </button>
+                <button class="nav-link" id="address-tab" data-bs-toggle="pill" data-bs-target="#address" type="button" role="tab">
+                    <i class="fas fa-map-marker-alt me-2"></i> Alamat Pengiriman
+                </button>
+                <button class="nav-link" id="password-tab" data-bs-toggle="pill" data-bs-target="#password" type="button" role="tab">
+                    <i class="fas fa-lock me-2"></i> Ubah Kata Sandi
+                </button>
+                <button class="nav-link" id="notifications-tab" data-bs-toggle="pill" data-bs-target="#notifications" type="button" role="tab">
+                    <i class="fas fa-bell me-2"></i> Notifikasi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-body">
+                <div class="tab-content" id="profile-tabContent">
+                    <!-- Personal Information -->
+                    <div class="tab-pane fade show active" id="personal-info" role="tabpanel">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Informasi Pribadi</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'accounts:update_profile' %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="first_name" class="form-label">Nama Depan</label>
+                                        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="last_name" class="form-label">Nama Belakang</label>
+                                        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" readonly>
+                                        <small class="text-muted">Username tidak dapat diubah</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="phone" class="form-label">Nomor Telepon</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.profile.phone_number|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="birth_date" class="form-label">Tanggal Lahir</label>
+                                        <input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ user.profile.birth_date|date:'Y-m-d'|default:'' }}">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="photo" class="form-label">Foto Profil</label>
+                                    <input type="file" class="form-control" id="photo" name="photo">
+                                    <small class="text-muted">Format yang didukung: JPG, PNG. Maksimal 2MB.</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="bio" class="form-label">Bio</label>
+                                    <textarea class="form-control" id="bio" name="bio" rows="3">{{ user.profile.bio|default:'' }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Address Information -->
+                    <div class="tab-pane fade" id="address" role="tabpanel">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Alamat Pengiriman</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if user.addresses.all %}
+                                <div class="row">
+                                    {% for address in user.addresses.all %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ address.address_name }}</h5>
+                                                    <p class="card-text">
+                                                        {{ address.recipient_name }}<br>
+                                                        {{ address.phone_number }}<br>
+                                                        {{ address.street_address }}<br>
+                                                        {{ address.city }}<br>
+                                                        {{ address.province }}, {{ address.postal_code }}
+                                                    </p>
+                                                    {% if address.is_default %}
+                                                        <span class="badge bg-success mb-2">Alamat Utama</span>
+                                                    {% endif %}
+                                                    <div class="d-flex mt-2">
+                                                        <a href="{% url 'accounts:edit_address' address.id %}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                                                        <form method="post" action="{% url 'accounts:delete_address' address.id %}" onsubmit="return confirm('Yakin ingin menghapus alamat ini?');">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
+                                                        </form>
+                                                        {% if not address.is_default %}
+                                                            <form method="post" action="{% url 'accounts:set_default_address' address.id %}" class="ms-2">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-sm btn-outline-success">Jadikan Utama</button>
+                                                            </form>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    Anda belum memiliki alamat pengiriman. Silakan tambahkan alamat baru.
+                                </div>
+                            {% endif %}
+                            
+                            <a href="{% url 'accounts:add_address' %}" class="btn btn-primary mt-3">
+                                <i class="fas fa-plus me-2"></i> Tambah Alamat Baru
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Change Password -->
+                    <div class="tab-pane fade" id="password" role="tabpanel">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Ubah Kata Sandi</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'accounts:change_password' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="current_password" class="form-label">Kata Sandi Saat Ini</label>
+                                    <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="new_password1" class="form-label">Kata Sandi Baru</label>
+                                    <input type="password" class="form-control" id="new_password1" name="new_password1" required>
+                                    <small class="text-muted">
+                                        Kata sandi Anda harus memiliki minimal 8 karakter dan tidak boleh terlalu umum.
+                                    </small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="new_password2" class="form-label">Konfirmasi Kata Sandi Baru</label>
+                                    <input type="password" class="form-control" id="new_password2" name="new_password2" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Ubah Kata Sandi</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="tab-pane fade" id="notifications" role="tabpanel">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Pengaturan Notifikasi</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'accounts:update_notifications' %}">
+                                {% csrf_token %}
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="email_promo" name="email_promo" {% if user.profile.notify_promos %}checked{% endif %}>
+                                    <label class="form-check-label" for="email_promo">Notifikasi Promo dan Diskon</label>
+                                    <div class="text-muted small">Terima informasi tentang penawaran khusus dan diskon</div>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="email_order" name="email_order" {% if user.profile.notify_orders %}checked{% endif %}>
+                                    <label class="form-check-label" for="email_order">Notifikasi Status Pesanan</label>
+                                    <div class="text-muted small">Terima pembaruan tentang status pesanan Anda</div>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="email_news" name="email_news" {% if user.profile.notify_news %}checked{% endif %}>
+                                    <label class="form-check-label" for="email_news">Berita dan Pembaruan</label>
+                                    <div class="text-muted small">Terima berita dan pembaruan terbaru dari kami</div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Simpan Preferensi</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Ringkasan Aktivitas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <h3>{{ user.orders.count|default:"0" }}</h3>
+                        <p class="text-muted">Total Pesanan</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <h3>{{ user.reviews.count|default:"0" }}</h3>
+                        <p class="text-muted">Ulasan Produk</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <h3>{{ user.wishlist.count|default:"0" }}</h3>
+                        <p class="text-muted">Wishlist</p>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'transactions:order_history' %}" class="btn btn-outline-primary">Lihat Riwayat Pesanan</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Script untuk preview foto profil sebelum upload
+    document.addEventListener('DOMContentLoaded', function() {
+        const photoInput = document.getElementById('photo');
+        const profilePicture = document.querySelector('.profile-picture');
+        
+        if (photoInput && profilePicture) {
+            photoInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        profilePicture.src = e.target.result;
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

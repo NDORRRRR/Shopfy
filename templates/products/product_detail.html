@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Produk | E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="jumbotron bg-light p-4 rounded">
+        <h1 class="display-5">Katalog Produk</h1>
+        <p class="lead">Temukan berbagai produk berkualitas dengan harga terbaik!</p>
+    </div>
+
+    <!-- Filter and Sort Options -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <form method="get" class="form-inline">
+                        <div class="input-group w-100">
+                            <input type="text" name="search" class="form-control" placeholder="Cari produk..." value="{{ request.GET.search|default:'' }}">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Cari
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6 text-md-right mt-3 mt-md-0">
+                    <div class="dropdown d-inline-block">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-sort"></i> Urutkan
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="sortDropdown">
+                            <a class="dropdown-item" href="?sort=price_asc{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Harga: Rendah ke Tinggi</a>
+                            <a class="dropdown-item" href="?sort=price_desc{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Harga: Tinggi ke Rendah</a>
+                            <a class="dropdown-item" href="?sort=name_asc{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Nama: A ke Z</a>
+                            <a class="dropdown-item" href="?sort=name_desc{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Nama: Z ke A</a>
+                            <a class="dropdown-item" href="?sort=newest{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Terbaru</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tags -->
+    {% if request.GET.search or request.GET.sort %}
+    <div class="mb-4">
+        <div class="d-flex flex-wrap">
+            {% if request.GET.search %}
+            <div class="badge badge-pill badge-light mr-2 mb-2 p-2">
+                Pencarian: "{{ request.GET.search }}"
+                <a href="{% url 'products:product_list' %}{% if request.GET.sort %}?sort={{ request.GET.sort }}{% endif %}" class="text-danger ml-2">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+            {% endif %}
+            
+            {% if request.GET.sort %}
+            <div class="badge badge-pill badge-light mr-2 mb-2 p-2">
+                {% if request.GET.sort == 'price_asc' %}
+                    Urutan: Harga Terendah
+                {% elif request.GET.sort == 'price_desc' %}
+                    Urutan: Harga Tertinggi
+                {% elif request.GET.sort == 'name_asc' %}
+                    Urutan: A-Z
+                {% elif request.GET.sort == 'name_desc' %}
+                    Urutan: Z-A
+                {% elif request.GET.sort == 'newest' %}
+                    Urutan: Terbaru
+                {% endif %}
+                <a href="{% url 'products:product_list' %}{% if request.GET.search %}?search={{ request.GET.search }}{% endif %}" class="text-danger ml-2">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Products Grid -->
+    <div class="row">
+        {% for product in products %}
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    {% else %}
+                        <div class="card-img-top bg-light text-center py-5">
+                            <i class="fas fa-box fa-4x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">{{ product.description|truncatechars:100 }}</p>
+                        <p class="card-text">
+                            {% if product.discount_price %}
+                                <span class="text-danger"><del>Rp {{ product.price }}</del></span>
+                                <strong class="d-block">Rp {{ product.discount_price }}</strong>
+                                {% if product.get_discount_percentage %}
+                                <span class="badge bg-success">{{ product.get_discount_percentage }}% OFF</span>
+                                {% endif %}
+                            {% else %}
+                                <strong>Rp {{ product.price }}</strong>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ product.get_absolute_url }}" class="btn btn-sm btn-outline-secondary">Detail</a>
+                            {% if product.stock > 0 %}
+                                <a href="{% url 'transactions:cart_add' product.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-cart-plus"></i> Tambahkan
+                                </a>
+                            {% else %}
+                                <button class="btn btn-sm btn-secondary" disabled>Stok Habis</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle mr-2"></i> Tidak ada produk yang tersedia.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if products.has_other_pages %}
+    <div class="row mt-4 mb-5">
+        <div class="col-12">
+            <nav aria-label="Halaman navigasi">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Sebelumnya">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link" aria-hidden="true">&laquo;</span>
+                        </li>
+                    {% endif %}
+                    
+                    {% for i in products.paginator.page_range %}
+                        {% if products.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }} <span class="sr-only">(current)</span></span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ i }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Selanjutnya">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link" aria-hidden="true">&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

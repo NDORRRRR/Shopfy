@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}Daftar Akun | KOPAG E-COMMERCE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        max-width: 550px;
+        margin: 40px auto;
+    }
+    .auth-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .auth-card-header {
+        background-color: #0d6efd;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    .auth-card-body {
+        padding: 30px;
+    }
+    .auth-title {
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    .form-control {
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 5px;
+    }
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .btn-auth {
+        padding: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: 6px;
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .auth-footer a {
+        color: #0d6efd;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+    .auth-divider {
+        margin: 25px 0;
+        text-align: center;
+        position: relative;
+    }
+    .auth-divider:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: #e0e0e0;
+    }
+    .auth-divider span {
+        position: relative;
+        background-color: white;
+        padding: 0 15px;
+        color: #6c757d;
+    }
+    .social-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .social-button {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    .social-button:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    .facebook {
+        background-color: #1877F2;
+    }
+    .google {
+        background-color: #DB4437;
+    }
+    .error-text {
+        color: #dc3545;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-card-header">
+            <h3 class="auth-title">DAFTAR AKUN</h3>
+            <p class="mb-0">Daftar dan mulai berbelanja di KOPAG E-COMMERCE</p>
+        </div>
+        <div class="auth-card-body">
+            <div class="social-buttons">
+                <a href="#" class="social-button facebook">
+                    <i class="fab fa-facebook-f me-2"></i> Facebook
+                </a>
+                <a href="#" class="social-button google">
+                    <i class="fab fa-google me-2"></i> Google
+                </a>
+            </div>
+            
+            <div class="auth-divider">
+                <span>ATAU DAFTAR DENGAN EMAIL</span>
+            </div>
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_first_name" class="form-label">Nama Depan</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                {% for error in form.first_name.errors %}
+                                    <div class="error-text">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_last_name" class="form-label">Nama Belakang</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                {% for error in form.last_name.errors %}
+                                    <div class="error-text">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <div class="error-text">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Alamat Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                            <div class="error-text">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">Kata Sandi</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        {% for error in form.password1.errors %}
+                            <div class="error-text">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-muted">
+                        Kata sandi harus minimal 8 karakter dan tidak boleh terlalu umum.
+                    </small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password2" class="form-label">Konfirmasi Kata Sandi</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        {% for error in form.password2.errors %}
+                            <div class="error-text">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="terms" required>
+                    <label class="form-check-label" for="terms">
+                        Saya menyetujui <a href="#" class="text-primary">syarat dan ketentuan</a> serta <a href="#" class="text-primary">kebijakan privasi</a>
+                    </label>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-auth">DAFTAR SEKARANG</button>
+                </div>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Sudah memiliki akun? <a href="{% url 'accounts:login' %}">Masuk di sini</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add Bootstrap classes to form fields
+    document.addEventListener('DOMContentLoaded', function() {
+        const formFields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+        formFields.forEach(field => {
+            field.classList.add('form-control');
+        });
+    });
+</script>
+{% endblock %}

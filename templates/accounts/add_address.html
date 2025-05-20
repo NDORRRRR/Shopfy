@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Tambah Alamat Baru</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'accounts:add_address' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="recipient_name" class="form-label">Nama Penerima</label>
+                            <input type="text" class="form-control" id="recipient_name" name="recipient_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">Nomor Telepon</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="street_address" class="form-label">Alamat</label>
+                            <textarea class="form-control" id="street_address" name="street_address" rows="3" required></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="city" class="form-label">Kota</label>
+                                <input type="text" class="form-control" id="city" name="city" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="province" class="form-label">Provinsi</label>
+                                <input type="text" class="form-control" id="province" name="province" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="postal_code" class="form-label">Kode Pos</label>
+                            <input type="text" class="form-control" id="postal_code" name="postal_code" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_default" name="is_default">
+                            <label class="form-check-label" for="is_default">Jadikan sebagai alamat utama</label>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Simpan Alamat</button>
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">Batal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
