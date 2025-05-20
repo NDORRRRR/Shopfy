@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, F
 from django.contrib import messages
 from django.http import HttpResponse
 import csv
@@ -9,6 +9,7 @@ from .models import Report
 from transactions.models import Order, OrderItem
 from accounts.models import Customer
 from products.models import Product
+from transactions.models import OrderItem
 
 def is_admin(user):
     return user.is_authenticated and user.is_staff
@@ -114,3 +115,43 @@ def export_sales_csv(request, report_id):
         ])
     
     return response
+
+@user_passes_test(is_admin)
+def product_report(request):
+    products = Product.objects.all()
+    
+    # Menghitung data untuk laporan
+    for product in products:
+        product.order_count = OrderItem.objects.filter(product=product).count()
+        product.total_sold = OrderItem.objects.filter(product=product).aggregate(
+            total=Sum('quantity')
+        )['total'] or 0
+        product.total_revenue = OrderItem.objects.filter(product=product).aggregate(
+            revenue=Sum(F('price') * F('quantity'))
+        )['revenue'] or 0
+    
+    # Urutkan produk berdasarkan total pendapatan (dari tertinggi ke terendah)
+    products = sorted(products, key=lambda p: p.total_revenue, reverse=True)
+    
+    # Menghitung statistik inventaris
+    total_products = products.count()
+    out_of_stock = products.filter(stock=0).count()
+    low_stock = products.filter(stock__gt=0, stock__lte=10).count()
+    
+    report = Report.objects.create(
+        title='Laporan Produk',
+        report_type='product',
+        description='Laporan performa produk dan statistik inventaris',
+        parameters={},
+        generated_by=request.user
+    )
+    
+    context = {
+        'products': products,
+        'total_products': total_products,
+        'out_of_stock': out_of_stock,
+        'low_stock': low_stock,
+        'report': report
+    }
+    
+    return render(request, 'reports/product_report.html', context)

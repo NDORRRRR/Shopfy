@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Laporan Produk | Admin E-Commerce{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        transition: all 0.3s;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .product-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+    }
+    .stock-warning {
+        color: #dc3545;
+    }
+    .stock-low {
+        color: #ffc107;
+    }
+    .stock-good {
+        color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Laporan Produk</h2>
+        <a href="{% url 'reports:report_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Statistik Inventaris</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-primary text-white stats-card">
+                        <div class="card-body text-center">
+                            <h6 class="text-uppercase">Total Produk</h6>
+                            <h2 class="display-4">{{ total_products }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-warning text-white stats-card">
+                        <div class="card-body text-center">
+                            <h6 class="text-uppercase">Stok Menipis</h6>
+                            <h2 class="display-4">{{ low_stock }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-danger text-white stats-card">
+                        <div class="card-body text-center">
+                            <h6 class="text-uppercase">Stok Habis</h6>
+                            <h2 class="display-4">{{ out_of_stock }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Data Produk</h5>
+        </div>
+        <div class="card-body">
+            {% if products %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Produk</th>
+                                <th>Kategori</th>
+                                <th>Harga</th>
+                                <th>Stok</th>
+                                <th>Terjual</th>
+                                <th>Pendapatan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if product.image %}
+                                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image rounded me-2">
+                                            {% else %}
+                                                <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-box text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ product.name }}</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ product.category.name }}</td>
+                                    <td>Rp{{ product.price }}</td>
+                                    <td>
+                                        {% if product.stock == 0 %}
+                                            <span class="stock-warning">{{ product.stock }} <i class="fas fa-exclamation-circle"></i></span>
+                                        {% elif product.stock <= 10 %}
+                                            <span class="stock-low">{{ product.stock }} <i class="fas fa-exclamation-triangle"></i></span>
+                                        {% else %}
+                                            <span class="stock-good">{{ product.stock }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ product.total_sold }}</td>
+                                    <td>Rp{{ product.total_revenue }}</td>
+                                    <td>
+                                        <a href="{% url 'products:product_detail' product.id product.slug %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Tidak ada data produk.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Produk Terlaris</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for product in products|slice:":5" %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0">{{ product.name }}</h5>
+                                    <span class="badge bg-success">{{ product.total_sold }} Terjual</span>
+                                </div>
+                                <p class="card-text">Kategori: {{ product.category.name }}</p>
+                                <p class="card-text">Harga: Rp{{ product.price }}</p>
+                                <p class="card-text">Pendapatan: Rp{{ product.total_revenue }}</p>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a href="{% url 'products:product_detail' product.id product.slug %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Detail
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Belum ada produk terlaris.
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
