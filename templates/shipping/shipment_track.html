@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Lacak Pengiriman | E-Commerce{% endblock %}
+{% block extra_css %}
+<style>
+    .tracking-progress {
+        position: relative;
+        padding-left: 45px;
+    }
+    .tracking-progress:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 20px;
+        height: 100%;
+        width: 4px;
+        background: #e9ecef;
+    }
+    .tracking-item {
+        position: relative;
+        padding-bottom: 25px;
+    }
+    .tracking-item:last-child {
+        padding-bottom: 0;
+    }
+    .tracking-icon {
+        position: absolute;
+        left: -45px;
+        top: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 4px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+    }
+    .tracking-item.active .tracking-icon {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+    }
+    .tracking-item.completed .tracking-icon {
+        background: #198754;
+        border-color: #198754;
+        color: white;
+    }
+    .tracking-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Lacak Pengiriman #{{ shipment.tracking_number }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2 mb-3">Informasi Pengiriman</h5>
+                    <p><strong>Nomor Resi:</strong> {{ shipment.tracking_number }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge bg-{% if shipment.status == 'processing' %}warning{% elif shipment.status == 'shipped' %}primary{% elif shipment.status == 'delivered' %}success{% elif shipment.status == 'cancelled' %}danger{% endif %}">
+                            {{ shipment.get_status_display }}
+                        </span>
+                    </p>
+                    <p><strong>Metode Pengiriman:</strong> {{ shipment.shipping_method.name }}</p>
+                    <p><strong>Estimasi Waktu:</strong> {{ shipment.shipping_method.estimated_days }} hari</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2 mb-3">Detail Penerima</h5>
+                    <p><strong>Nama:</strong> {{ shipment.order.full_name }}</p>
+                    <p><strong>Alamat:</strong> {{ shipment.order.address }}</p>
+                    <p><strong>Kota:</strong> {{ shipment.order.city }}, {{ shipment.order.province }} {{ shipment.order.postal_code }}</p>
+                </div>
+            </div>
+        <h5 class="border-bottom pb-2 mb-4">Status Pengiriman</h5>
+        
+        <div class="tracking-progress">
+            <div class="tracking-item {% if shipment.status != 'cancelled' %}completed{% endif %}">
+                <div class="tracking-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="tracking-content">
+                    <h6 class="mb-1">Pesanan Dibuat</h6>
+                    <p class="mb-0 text-muted">{{ shipment.order.created_at|date:"d F Y, H:i" }}</p>
+                </div>
+            </div>
+            
+            <div class="tracking-item {% if shipment.status != 'processing' and shipment.status != 'cancelled' %}completed{% elif shipment.status == 'processing' %}active{% endif %}">
+                <div class="tracking-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="tracking-content">
+                    <h6 class="mb-1">Pesanan Diproses</h6>
+                    <p class="mb-0 text-muted">Pesanan sedang disiapkan</p>
+                </div>
+            </div>
+            
+            <div class="tracking-item {% if shipment.status == 'shipped' or shipment.status == 'delivered' %}completed{% endif %}">
+                <div class="tracking-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="tracking-content">
+                    <h6 class="mb-1">Pesanan Dikirim</h6>
+                    <p class="mb-0 text-muted">Pesanan dalam perjalanan ke alamat Anda</p>
+                </div>
+            </div>
+            
+            <div class="tracking-item {% if shipment.status == 'delivered' %}completed{% endif %}">
+                <div class="tracking-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="tracking-content">
+                    <h6 class="mb-1">Pesanan Diterima</h6>
+                    <p class="mb-0 text-muted">Pesanan telah diterima oleh pelanggan</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 text-center">
+            <a href="{% url 'transactions:order_detail' shipment.order.id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Kembali ke Detail Pesanan
+            </a>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

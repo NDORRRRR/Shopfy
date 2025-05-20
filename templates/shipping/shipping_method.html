@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Metode Pengiriman | E-Commerce{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Metode Pengiriman</h2>
+<div class="row">
+    {% for method in shipping_methods %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">{{ method.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ method.description|default:"" }}</p>
+                    <p><strong>Perkiraan Waktu Pengiriman:</strong> {{ method.estimated_days }} hari</p>
+                    <p><strong>Biaya:</strong> Rp{{ method.price }}</p>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                Tidak ada metode pengiriman yang tersedia saat ini.
+            </div>
+        </div>
+    {% endfor %}
+</div>
+</div>
+{% endblock %}

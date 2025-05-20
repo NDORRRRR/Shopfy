@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Daftar Laporan | Admin E-Commerce{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Laporan</h2>
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Buat Laporan Baru</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-3x mb-3 text-primary"></i>
+                        <h5 class="card-title">Laporan Penjualan</h5>
+                        <p class="card-text">Lihat statistik penjualan berdasarkan periode waktu tertentu.</p>
+                        <a href="{% url 'reports:sales_report' %}" class="btn btn-primary">Buat Laporan</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-3x mb-3 text-success"></i>
+                        <h5 class="card-title">Laporan Pelanggan</h5>
+                        <p class="card-text">Analisis data pelanggan dan perilaku pembelian mereka.</p>
+                        <a href="{% url 'reports:customer_report' %}" class="btn btn-success">Buat Laporan</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-box fa-3x mb-3 text-info"></i>
+                        <h5 class="card-title">Laporan Produk</h5>
+                        <p class="card-text">Analisis performa produk dan inventaris.</p>
+                        <a href="#" class="btn btn-info">Buat Laporan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Laporan Terbaru</h5>
+    </div>
+    <div class="card-body">
+        {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Judul</th>
+                            <th>Jenis</th>
+                            <th>Dibuat Oleh</th>
+                            <th>Tanggal Dibuat</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                            <tr>
+                                <td>{{ report.title }}</td>
+                                <td>{{ report.get_report_type_display }}</td>
+                                <td>{{ report.generated_by.username }}</td>
+                                <td>{{ report.created_at|date:"d M Y, H:i" }}</td>
+                                <td>
+                                    {% if report.report_type == 'sales' %}
+                                        <a href="{% url 'reports:export_sales_csv' report.id %}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-download"></i> Export CSV
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> Belum ada laporan yang dibuat.
+            </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}

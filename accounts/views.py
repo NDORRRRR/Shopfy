@@ -144,6 +144,9 @@ def update_notifications(request):
     
     return redirect('accounts:profile')
 
+from django.shortcuts import get_object_or_404
+
+@login_required
 def edit_address(request, address_id):
     address = get_object_or_404(Address, id=address_id, user=request.user)
     
@@ -156,8 +159,9 @@ def edit_address(request, address_id):
     else:
         form = AddressForm(instance=address)
     
-    return render(request, 'accounts/edit_address.html', {'form': form})
+    return render(request, 'accounts/edit_address.html', {'form': form, 'address': address})
 
+@login_required
 def delete_address(request, address_id):
     address = get_object_or_404(Address, id=address_id, user=request.user)
     
@@ -171,6 +175,21 @@ def delete_address(request, address_id):
         
         address.delete()
         messages.success(request, 'Alamat berhasil dihapus')
+    
+    return redirect('accounts:profile')
+
+@login_required
+def set_default_address(request, address_id):
+    if request.method == 'POST':
+        # Hapus status default dari semua alamat pengguna
+        Address.objects.filter(user=request.user, is_default=True).update(is_default=False)
+        
+        # Set alamat yang dipilih sebagai default
+        address = get_object_or_404(Address, id=address_id, user=request.user)
+        address.is_default = True
+        address.save()
+        
+        messages.success(request, 'Alamat utama berhasil diubah')
     
     return redirect('accounts:profile')
 

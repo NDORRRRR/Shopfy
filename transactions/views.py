@@ -130,3 +130,70 @@ def order_history(request):
 def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'transactions/order_detail.html', {'order': order})
+
+@login_required
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Hanya pesanan dengan status 'pending' atau 'processing' yang dapat dibatalkan
+    if order.status not in ['pending', 'processing']:
+        messages.error(request, 'Pesanan ini tidak dapat dibatalkan.')
+        return redirect('transactions:order_detail', order_id=order.id)
+    
+    if request.method == 'POST':
+        # Ubah status pesanan menjadi 'cancelled'
+        order.status = 'cancelled'
+        order.save()
+        
+        # Kembalikan stok produk
+        for item in order.items.all():
+            product = item.product
+            product.stock += item.quantity
+            product.save()
+        
+        messages.success(request, 'Pesanan berhasil dibatalkan.')
+        return redirect('transactions:order_history')
+    
+    return render(request, 'transactions/order_cancel.html', {'order': order})
+
+@login_required
+def cart_add(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Tentukan jumlah dari form atau default ke 1
+    quantity = 1
+    if request.method == 'POST':
+        try:
+            quantity = int(request.POST.get('quantity', 1))
+            if quantity <= 0:
+                quantity = 1
+            elif quantity > product.stock:
+                quantity = product.stock
+        except (ValueError, TypeError):
+            quantity = 1
+    
+    # Get or create user's cart
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    
+    # Check if product already in cart
+    try:
+        cart_item = CartItem.objects.get(cart=cart, product=product)
+        # Pastikan jumlah yang ditambahkan tidak melebihi stok produk
+        new_quantity = cart_item.quantity + quantity
+        if new_quantity > product.stock:
+            new_quantity = product.stock
+            messages.warning(request, f'Jumlah produk disesuaikan dengan stok yang tersedia ({product.stock}).')
+        cart_item.quantity = new_quantity
+        cart_item.save()
+    except CartItem.DoesNotExist:
+        CartItem.objects.create(cart=cart, product=product, quantity=quantity)
+    
+    messages.success(request, f'{quantity} {product.name} ditambahkan ke keranjang!')
+    
+    # Redirect user to cart detail or stay on product page based on the referring URL
+    if request.META.get('HTTP_REFERER') and 'product_detail' in request.META.get('HTTP_REFERER'):
+        return redirect('transactions:cart_detail')
+    elif 'next' in request.GET:
+        return redirect(request.GET.get('next'))
+    else:
+        return redirect('transactions:cart_detail')

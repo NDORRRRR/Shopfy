@@ -159,6 +159,38 @@
                         </div>
                         <div class="card-body">
                             {% if user.addresses.all %}
+                            <!-- Di dalam blok {% if user.addresses.all %} -->
+{% for address in user.addresses.all %}
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ address.recipient_name }}</h5>
+                <p class="card-text">
+                    {{ address.phone_number }}<br>
+                    {{ address.street_address }}<br>
+                    {{ address.city }}<br>
+                    {{ address.province }}, {{ address.postal_code }}
+                </p>
+                {% if address.is_default %}
+                    <span class="badge bg-success mb-2">Alamat Utama</span>
+                {% endif %}
+                <div class="d-flex mt-2">
+                    <a href="{% url 'accounts:edit_address' address.id %}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                    <form method="post" action="{% url 'accounts:delete_address' address.id %}" onsubmit="return confirm('Yakin ingin menghapus alamat ini?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
+                    </form>
+                    {% if not address.is_default %}
+                        <form method="post" action="{% url 'accounts:set_default_address' address.id %}" class="ms-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-success">Jadikan Utama</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
                                 <div class="row">
                                     {% for address in user.addresses.all %}
                                         <div class="col-md-6 mb-3">

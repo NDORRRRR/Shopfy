@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Detail Pengiriman | E-Commerce{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Detail Pengiriman untuk Pesanan #{{ order.id }}</h4>
+        </div>
+        <div class="card-body">
+            {% if shipment %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="border-bottom pb-2 mb-3">Informasi Pengiriman</h5>
+                        <p><strong>Status:</strong> 
+                            <span class="badge bg-{% if shipment.status == 'processing' %}warning{% elif shipment.status == 'shipped' %}primary{% elif shipment.status == 'delivered' %}success{% elif shipment.status == 'cancelled' %}danger{% endif %}">
+                                {{ shipment.get_status_display }}
+                            </span>
+                        </p>
+                        <p><strong>Metode Pengiriman:</strong> {{ shipment.shipping_method.name }}</p>
+                        <p><strong>Nomor Resi:</strong> {{ shipment.tracking_number|default:"Belum tersedia" }}</p>
+                        <p><strong>Tanggal Dibuat:</strong> {{ shipment.created_at|date:"d F Y, H:i" }}</p>
+                        {% if shipment.notes %}
+                            <p><strong>Catatan:</strong> {{ shipment.notes }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="border-bottom pb-2 mb-3">Detail Penerima</h5>
+                        <p><strong>Nama:</strong> {{ order.full_name }}</p>
+                        <p><strong>Alamat:</strong> {{ order.address }}</p>
+                        <p><strong>Kota:</strong> {{ order.city }}, {{ order.province }} {{ order.postal_code }}</p>
+                        <p><strong>Telepon:</strong> {{ order.phone }}</p>
+                    </div>
+                </div>
+            {% if shipment.tracking_number %}
+                <div class="mt-4">
+                    <a href="{% url 'shipping:shipment_track' shipment.tracking_number %}" class="btn btn-primary">
+                        <i class="fas fa-truck"></i> Lacak Pengiriman
+                    </a>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <h5 class="alert-heading">Pengiriman belum diproses</h5>
+                <p>Pesanan Anda masih dalam tahap persiapan dan belum dikirim.</p>
+            </div>
+        {% endif %}
+
+        <div class="mt-4">
+            <a href="{% url 'transactions:order_detail' order.id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Kembali ke Detail Pesanan
+            </a>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

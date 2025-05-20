@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Buat Laporan Penjualan | Admin E-Commerce{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Buat Laporan Penjualan</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="start_date" class="form-label">Tanggal Mulai</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="end_date" class="form-label">Tanggal Akhir</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control" required>
+                    </div>
+                </div>
+            <div class="mb-3">
+                <div class="form-text text-muted">
+                    Tentukan rentang tanggal untuk membuat laporan penjualan. Laporan akan mencakup semua transaksi yang terjadi dalam periode tersebut.
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'reports:report_list' %}" class="btn btn-secondary me-md-2">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-chart-line"></i> Buat Laporan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}

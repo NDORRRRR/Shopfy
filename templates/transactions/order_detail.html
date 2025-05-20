@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Detail Pesanan #{{ order.id }} | E-Commerce{% endblock %}
+
+{% block content %}
+
+<div class="container my-5"> <div class="card mb-4"> <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center"> <h4 class="mb-0">Detail Pesanan #{{ order.id }}</h4> <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'processing' %}info{% elif order.status == 'shipped' %}primary{% elif order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% endif %}"> {{ order.get_status_display }} </span> </div> <div class="card-body"> <div class="row mb-4"> <div class="col-md-6"> <h5 class="border-bottom pb-2 mb-3">Informasi Pesanan</h5> <p><strong>Tanggal Pesanan:</strong> {{ order.created_at|date:"d F Y, H:i" }}</p> <p><strong>Status:</strong> <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'processing' %}info{% elif order.status == 'shipped' %}primary{% elif order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% endif %}"> {{ order.get_status_display }} </span> </p> <p><strong>Total Pembayaran:</strong> Rp{{ order.total_price }}</p> </div> <div class="col-md-6"> <h5 class="border-bottom pb-2 mb-3">Informasi Pengiriman</h5> <p><strong>Nama Penerima:</strong> {{ order.full_name }}</p> <p><strong>Alamat:</strong> {{ order.address }}</p> <p><strong>Kota:</strong> {{ order.city }}, {{ order.province }} {{ order.postal_code }}</p> <p><strong>Telepon:</strong> {{ order.phone }}</p> </div> </div>
+        <h5 class="border-bottom pb-2 mb-3">Daftar Produk</h5>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Produk</th>
+                        <th>Harga</th>
+                        <th>Jumlah</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-thumbnail me-2" style="max-width: 50px;">
+                                    {% else %}
+                                        <div class="bg-light me-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Rp{{ item.price }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>Rp{{ item.get_cost }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end">Total</th>
+                        <th>Rp{{ order.total_price }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {% if order.status == 'pending' or order.status == 'processing' %}
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{% url 'transactions:order_history' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Riwayat
+                </a>
+                <form method="post" action="{% url 'transactions:cancel_order' order.id %}" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Batalkan Pesanan
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="mt-4">
+                <a href="{% url 'transactions:order_history' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Riwayat
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if order.status == 'shipped' and order.shipment %}
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Informasi Pengiriman</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Kurir:</strong> {{ order.shipment.shipping_method.name }}</p>
+            <p><strong>Nomor Resi:</strong> {{ order.shipment.tracking_number }}</p>
+            <p><strong>Status:</strong> {{ order.shipment.get_status_display }}</p>
+            
+            <a href="{% url 'shipping:shipment_track' order.shipment.tracking_number %}" class="btn btn-info">
+                <i class="fas fa-truck"></i> Lacak Pengiriman
+            </a>
+        </div>
+    </div>
+{% endif %}
+</div> {% endblock %}
