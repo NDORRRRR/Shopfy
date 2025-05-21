@@ -147,9 +147,11 @@
                                                         <div class="d-flex mt-2">
                                                             <a href="{% url 'accounts:edit_address' address.id %}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
                                                             <form method="post" action="{% url 'accounts:delete_address' address.id %}" onsubmit="return confirm('Yakin ingin menghapus alamat ini?');">
+                                                                <!-- Replace the existing delete button with this -->
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteAddress({{ address.id }})">Hapus</button>
+                                                                <form method="post" action="{% url 'accounts:delete_address' address.id %}" id="delete-address-form-{{ address.id }}" style="display: none;">
                                                                 {% csrf_token %}
-                                                                <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
-                                                            </form>
+                                                                </form>
                                                             {% if not address.is_default %}
                                                                 <form method="post" action="{% url 'accounts:set_default_address' address.id %}" class="ms-2">
                                                                     {% csrf_token %}
@@ -261,6 +263,24 @@
         </div>
     </div>
 </div>
+<!-- Delete Address Confirmation Modal -->
+<div class="modal fade" id="deleteAddressModal" tabindex="-1" aria-labelledby="deleteAddressModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteAddressModalLabel">Konfirmasi Hapus</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="deleteAddressText">
+        Yakin ingin menghapus alamat ini?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteAddressBtn">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -297,5 +317,34 @@
             });
         });
     });
+
+    // Address deletion confirmation
+let deleteAddressForm = null;
+
+function confirmDeleteAddress(addressId) {
+    // Store reference to the form
+    deleteAddressForm = document.getElementById(`delete-address-form-${addressId}`);
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteAddressModal'));
+    modal.show();
+}
+
+// Set up the confirmation button
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmBtn = document.getElementById('confirmDeleteAddressBtn');
+    confirmBtn.addEventListener('click', function() {
+        if (deleteAddressForm) {
+            deleteAddressForm.submit();
+        }
+        
+        // Hide the modal
+        const modalElement = document.getElementById('deleteAddressModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+            modal.hide();
+        }
+    });
+});
 </script>
 {% endblock %}

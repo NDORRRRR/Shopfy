@@ -11,6 +11,9 @@
                 <div class="card-body">
                     <form method="post" action="{% url 'accounts:add_address' %}">
                         {% csrf_token %}
+                        <!-- Store the next URL in a hidden field -->
+                        <input type="hidden" name="next_url" value="{{ next_url }}">
+                        
                         <div class="mb-3">
                             <label for="recipient_name" class="form-label">Nama Penerima</label>
                             <input type="text" class="form-control" id="recipient_name" name="recipient_name" required>
@@ -43,7 +46,7 @@
                         </div>
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">Simpan Alamat</button>
-                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">Batal</a>
+                            <a href="{{ next_url }}" class="btn btn-outline-secondary">Batal</a>
                         </div>
                     </form>
                 </div>

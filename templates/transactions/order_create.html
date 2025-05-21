@@ -13,8 +13,7 @@
                     <h5 class="mb-0">Data Pengiriman</h5>
                 </div>
                 <div class="card-body">
-                    <!-- Two-column layout for addresses -->
-                    <div class="row">
+                    <div class="row mb-4">
                         <!-- Left column: Saved addresses -->
                         <div class="col-md-6">
                             <h6 class="mb-3">Alamat Tersimpan</h6>
@@ -24,7 +23,7 @@
                                     <div class="card mb-2 {% if address.is_default %}border-primary{% endif %}">
                                         <div class="card-body py-2 px-3">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="saved_address" id="address_{{ address.id }}" value="{{ address.id }}" {% if address.is_default %}checked{% endif %} onchange="fillAddressForm(this)">
+                                                <input class="form-check-input" type="radio" name="saved_address" id="address_{{ address.id }}" value="{{ address.id }}" {% if address.is_default %}checked{% endif %}>
                                                 <label class="form-check-label" for="address_{{ address.id }}">
                                                     <strong>{{ address.recipient_name }}</strong>
                                                     {% if address.is_default %}<span class="badge bg-primary ms-2">Utama</span>{% endif %}
@@ -44,14 +43,19 @@
                             {% endif %}
                         </div>
                         
-                        <!-- Right column: New address form -->
+                        <!-- Right column: New address option -->
                         <div class="col-md-6">
                             <h6 class="mb-3">Alamat Baru</h6>
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="radio" name="saved_address" id="new_address" value="new" {% if not addresses %}checked{% endif %} onchange="enableNewAddressForm(this)">
+                                <input class="form-check-input" type="radio" name="saved_address" id="new_address" value="new" {% if not addresses %}checked{% endif %}>
                                 <label class="form-check-label" for="new_address">
                                     <strong>Gunakan alamat baru</strong>
                                 </label>
+                            </div>
+                            <div id="new-address-section" style="display: none;">
+                                <a href="{% url 'accounts:add_address' %}?next={% url 'transactions:order_create' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-plus"></i> Tambah Alamat Baru
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -60,39 +64,7 @@
                     
                     <form method="post" id="checkout-form">
                         {% csrf_token %}
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label for="full_name" class="form-label">Nama Penerima</label>
-                                <input type="text" class="form-control" id="full_name" name="full_name" value="{{ form.full_name.value|default:'' }}" required>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Nomor Telepon</label>
-                            <input type="text" class="form-control" id="phone" name="phone" value="{{ form.phone.value|default:'' }}" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Alamat Lengkap</label>
-                            <textarea class="form-control" id="address" name="address" rows="3" required>{{ form.address.value|default:'' }}</textarea>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="city" class="form-label">Kota</label>
-                                <input type="text" class="form-control" id="city" name="city" value="{{ form.city.value|default:'' }}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="province" class="form-label">Provinsi</label>
-                                <input type="text" class="form-control" id="province" name="province" value="{{ form.province.value|default:'' }}" required>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="postal_code" class="form-label">Kode Pos</label>
-                            <input type="text" class="form-control" id="postal_code" name="postal_code" value="{{ form.postal_code.value|default:'' }}" required>
-                        </div>
+                        <input type="hidden" id="selected_address_id" name="selected_address_id" value="">
                         
                         <div class="mb-4">
                             <label class="form-label">Metode Pembayaran</label>
@@ -182,51 +154,42 @@
 
 {% block extra_js %}
 <script>
-function fillAddressForm(radio) {
-    if (radio.checked) {
-        const addressId = radio.value;
-        
-        // If "new address" is selected, clear form but don't disable
-        if (addressId === "new") {
-            document.getElementById("full_name").value = "";
-            document.getElementById("phone").value = "";
-            document.getElementById("address").value = "";
-            document.getElementById("city").value = "";
-            document.getElementById("province").value = "";
-            document.getElementById("postal_code").value = "";
-            return;
-        }
-        
-        {% for address in addresses %}
-        if (addressId == "{{ address.id }}") {
-            document.getElementById("full_name").value = "{{ address.recipient_name }}";
-            document.getElementById("phone").value = "{{ address.phone_number }}";
-            document.getElementById("address").value = "{{ address.street_address }}";
-            document.getElementById("city").value = "{{ address.city }}";
-            document.getElementById("province").value = "{{ address.province }}";
-            document.getElementById("postal_code").value = "{{ address.postal_code }}";
-        }
-        {% endfor %}
-    }
-}
-
-function enableNewAddressForm(radio) {
-    if (radio.checked) {
-        document.getElementById("full_name").value = "";
-        document.getElementById("phone").value = "";
-        document.getElementById("address").value = "";
-        document.getElementById("city").value = "";
-        document.getElementById("province").value = "";
-        document.getElementById("postal_code").value = "";
-    }
-}
-
-// Fill form with default address on page load
 document.addEventListener("DOMContentLoaded", function() {
+    // Set up radio button events for address selection
+    const addressRadios = document.querySelectorAll('input[name="saved_address"]');
+    const newAddressSection = document.getElementById('new-address-section');
+    
+    addressRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'new') {
+                newAddressSection.style.display = 'block';
+            } else {
+                newAddressSection.style.display = 'none';
+                document.getElementById('selected_address_id').value = this.value;
+            }
+        });
+    });
+    
+    // Set initial state based on default selected radio
     const defaultRadio = document.querySelector('input[name="saved_address"]:checked');
     if (defaultRadio) {
-        fillAddressForm(defaultRadio);
+        if (defaultRadio.value === 'new') {
+            newAddressSection.style.display = 'block';
+        } else {
+            document.getElementById('selected_address_id').value = defaultRadio.value;
+        }
     }
+    
+    // Set up form submission
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        const selectedAddress = document.querySelector('input[name="saved_address"]:checked');
+        
+        if (selectedAddress.value === 'new') {
+            // Redirect to add address page
+            e.preventDefault();
+            window.location.href = "{% url 'accounts:add_address' %}?next={% url 'transactions:order_create' %}";
+        }
+    });
 });
 </script>
 {% endblock %}

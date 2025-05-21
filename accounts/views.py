@@ -102,10 +102,13 @@ def update_profile(request):
     return redirect('accounts:profile')
 
 @login_required
+@login_required
 def add_address(request):
+    # Store the next URL for redirection after form submission
+    next_url = request.GET.get('next', 'accounts:profile')
+    
     if request.method == 'POST':
         # Process the form data
-        # Assuming you have an Address model associated with the user
         address = Address(
             user=request.user,
             recipient_name=request.POST.get('recipient_name', ''),
@@ -114,7 +117,7 @@ def add_address(request):
             city=request.POST.get('city', ''),
             province=request.POST.get('province', ''),
             postal_code=request.POST.get('postal_code', ''),
-            is_default=request.POST.get('is_default') == 'on'  # Checkbox handling
+            is_default=request.POST.get('is_default') == 'on'
         )
         address.save()
         
@@ -123,10 +126,12 @@ def add_address(request):
             Address.objects.filter(user=request.user).exclude(id=address.id).update(is_default=False)
             
         messages.success(request, 'Alamat baru berhasil ditambahkan!')
-        return redirect('accounts:profile')
+        
+        # Redirect to the next URL or default to profile
+        return redirect(request.POST.get('next_url', 'accounts:profile'))
     
     # If GET request, render form
-    return render(request, 'accounts/add_address.html')
+    return render(request, 'accounts/add_address.html', {'next_url': next_url})
 
 @login_required
 def change_password(request):
