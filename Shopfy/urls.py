@@ -13,8 +13,8 @@ urlpatterns = [
     path('shipping/', include('shipping.urls', namespace='shipping')),
     path('reports/', include('reports.urls', namespace='reports')),
     path('', home, name='home'),  # Home page
-    path('tentang-kami/', about_us, name='about_us'),  # About Us page
-    path('kontak/', contact, name='contact'),  # Contact page
+    path('tentang-kami/', about_us, name='about_us'),
+    path('kontak/', contact, name='contact'),
 ]
 
 if settings.DEBUG:

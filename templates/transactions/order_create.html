@@ -13,12 +13,57 @@
                     <h5 class="mb-0">Data Pengiriman</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Two-column layout for addresses -->
+                    <div class="row">
+                        <!-- Left column: Saved addresses -->
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Alamat Tersimpan</h6>
+                            {% if addresses %}
+                                <div class="address-list">
+                                    {% for address in addresses %}
+                                    <div class="card mb-2 {% if address.is_default %}border-primary{% endif %}">
+                                        <div class="card-body py-2 px-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="saved_address" id="address_{{ address.id }}" value="{{ address.id }}" {% if address.is_default %}checked{% endif %} onchange="fillAddressForm(this)">
+                                                <label class="form-check-label" for="address_{{ address.id }}">
+                                                    <strong>{{ address.recipient_name }}</strong>
+                                                    {% if address.is_default %}<span class="badge bg-primary ms-2">Utama</span>{% endif %}
+                                                </label>
+                                            </div>
+                                            <p class="small mb-0 mt-1 ms-4">
+                                                {{ address.phone_number }}<br>
+                                                {{ address.street_address }}<br>
+                                                {{ address.city }}, {{ address.province }} {{ address.postal_code }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">Anda belum memiliki alamat tersimpan.</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Right column: New address form -->
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Alamat Baru</h6>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="saved_address" id="new_address" value="new" {% if not addresses %}checked{% endif %} onchange="enableNewAddressForm(this)">
+                                <label class="form-check-label" for="new_address">
+                                    <strong>Gunakan alamat baru</strong>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
                     <form method="post" id="checkout-form">
                         {% csrf_token %}
                         
                         <div class="row mb-3">
                             <div class="col-md-12">
-                                <label for="full_name" class="form-label">Nama Lengkap</label>
+                                <label for="full_name" class="form-label">Nama Penerima</label>
                                 <input type="text" class="form-control" id="full_name" name="full_name" value="{{ form.full_name.value|default:'' }}" required>
                             </div>
                         </div>
@@ -137,12 +182,51 @@
 
 {% block extra_js %}
 <script>
-    // Tambahkan kelas Bootstrap ke form fields
-    document.addEventListener('DOMContentLoaded', function() {
-        const formFields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea, select');
-        formFields.forEach(field => {
-            field.classList.add('form-control');
-        });
-    });
+function fillAddressForm(radio) {
+    if (radio.checked) {
+        const addressId = radio.value;
+        
+        // If "new address" is selected, clear form but don't disable
+        if (addressId === "new") {
+            document.getElementById("full_name").value = "";
+            document.getElementById("phone").value = "";
+            document.getElementById("address").value = "";
+            document.getElementById("city").value = "";
+            document.getElementById("province").value = "";
+            document.getElementById("postal_code").value = "";
+            return;
+        }
+        
+        {% for address in addresses %}
+        if (addressId == "{{ address.id }}") {
+            document.getElementById("full_name").value = "{{ address.recipient_name }}";
+            document.getElementById("phone").value = "{{ address.phone_number }}";
+            document.getElementById("address").value = "{{ address.street_address }}";
+            document.getElementById("city").value = "{{ address.city }}";
+            document.getElementById("province").value = "{{ address.province }}";
+            document.getElementById("postal_code").value = "{{ address.postal_code }}";
+        }
+        {% endfor %}
+    }
+}
+
+function enableNewAddressForm(radio) {
+    if (radio.checked) {
+        document.getElementById("full_name").value = "";
+        document.getElementById("phone").value = "";
+        document.getElementById("address").value = "";
+        document.getElementById("city").value = "";
+        document.getElementById("province").value = "";
+        document.getElementById("postal_code").value = "";
+    }
+}
+
+// Fill form with default address on page load
+document.addEventListener("DOMContentLoaded", function() {
+    const defaultRadio = document.querySelector('input[name="saved_address"]:checked');
+    if (defaultRadio) {
+        fillAddressForm(defaultRadio);
+    }
+});
 </script>
 {% endblock %}

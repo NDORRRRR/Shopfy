@@ -14,8 +14,15 @@ def contact(request):
         message = request.POST.get('message', '')
         
         # Simpan pesan atau kirim email (opsional)
+        from .models import Contact
+        Contact.objects.create(
+            name=name,
+            email=email,
+            subject=subject,
+            message=message
+        )
         
         messages.success(request, 'Pesan Anda telah dikirim. Kami akan segera menghubungi Anda.')
-        return redirect('contact')
+        return redirect('contact')  # Change this to the correct URL name
     
     return render(request, 'pages/contact.html')

@@ -74,16 +74,17 @@ def order_create(request):
         messages.error(request, 'Keranjang Anda kosong!')
         return redirect('transactions:cart_detail')
     
+    # Get user's saved addresses
+    addresses = request.user.addresses.all()
+    default_address = addresses.filter(is_default=True).first()
+    
     if request.method == 'POST':
         form = OrderCreateForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
             order.user = request.user
             order.total_price = cart.get_total_price()
-            
-            # Simpan metode pembayaran
             order.payment_method = request.POST.get('payment_method', 'transfer')
-            
             order.save()
             
             # Create order items from cart items
@@ -105,9 +106,18 @@ def order_create(request):
             
             return render(request, 'transactions/order_created.html', {'order': order})
     else:
-        # Pre-fill form with user profile data if available
+        # Pre-fill form with default address if available
         initial_data = {}
-        if hasattr(request.user, 'customer'):
+        if default_address:
+            initial_data = {
+                'full_name': default_address.recipient_name,
+                'address': default_address.street_address,
+                'city': default_address.city,
+                'province': default_address.province,
+                'postal_code': default_address.postal_code,
+                'phone': default_address.phone_number
+            }
+        elif hasattr(request.user, 'customer'):
             customer = request.user.customer
             initial_data = {
                 'full_name': f"{request.user.first_name} {request.user.last_name}".strip(),
@@ -122,7 +132,9 @@ def order_create(request):
     return render(request, 'transactions/order_create.html', {
         'cart': cart,
         'cart_items': cart_items,
-        'form': form
+        'form': form,
+        'addresses': addresses,
+        'default_address': default_address
     })
     
 @login_required
