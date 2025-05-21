@@ -26,6 +26,7 @@ class CartItem(models.Model):
     def get_cost(self):
         return self.product.price * self.quantity
 
+# transactions/models.py
 class Order(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -35,6 +36,12 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
     )
     
+    PAYMENT_CHOICES = (
+        ('transfer', 'Transfer Bank'),
+        ('ewallet', 'E-Wallet'),
+        ('cod', 'Cash on Delivery'),
+    )
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     full_name = models.CharField(max_length=100)
     address = models.TextField()
@@ -42,11 +49,15 @@ class Order(models.Model):
     province = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
     phone = models.CharField(max_length=20)
+    
+    # Tambahkan field payment_method jika belum ada
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='transfer')
+    
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    
     class Meta:
         ordering = ['-created_at']
     

@@ -1,126 +1,95 @@
 {% extends 'base.html' %}
 
-{% block title %}Keranjang Belanja | E-Commerce{% endblock %}
+{% block title %}Detail Pesanan #{{ order.id }} | KOPAG E-COMMERCE{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Keranjang Belanja</h2>
-
-    {% if cart_items %}
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Produk dalam Keranjang</h5>
+<div class="container my-5">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Detail Pesanan #{{ order.id }}</h4>
+            <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'processing' %}info{% elif order.status == 'shipped' %}primary{% elif order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% endif %}">
+                {{ order.get_status_display }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2 mb-3">Informasi Pesanan</h5>
+                    <p><strong>Tanggal Pesanan:</strong> {{ order.created_at|date:"d F Y, H:i" }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'processing' %}info{% elif order.status == 'shipped' %}primary{% elif order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </p>
+                    <p><strong>Total Pembayaran:</strong> Rp{{ order.total_price }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2 mb-3">Informasi Pengiriman</h5>
+                    <p><strong>Nama Penerima:</strong> {{ order.full_name }}</p>
+                    <p><strong>Alamat:</strong> {{ order.address }}</p>
+                    <p><strong>Kota:</strong> {{ order.city }}, {{ order.province }} {{ order.postal_code }}</p>
+                    <p><strong>Telepon:</strong> {{ order.phone }}</p>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead class="table-light">
+
+            <h5 class="border-bottom pb-2 mb-3">Daftar Produk</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th>Harga</th>
+                            <th>Jumlah</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
                             <tr>
-                                <th>Produk</th>
-                                <th>Harga</th>
-                                <th>Jumlah</th>
-                                <th class="text-end">Subtotal</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in cart_items %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            {% if item.product.image %}
-                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" width="60" class="me-3">
-                                            {% else %}
-                                                <div class="bg-light me-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                                                    <i class="fas fa-image text-muted"></i>
-                                                </div>
-                                            {% endif %}
-                                            <div>
-                                                <h6 class="mb-0">{{ item.product.name }}</h6>
-                                                <small class="text-muted">{{ item.product.category.name }}</small>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if item.product.image %}
+                                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-thumbnail me-2" style="max-width: 50px;">
+                                        {% else %}
+                                            <div class="bg-light me-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-image text-muted"></i>
                                             </div>
+                                        {% endif %}
+                                        <div>
+                                            {{ item.product.name }}
                                         </div>
-                                    </td>
-                                    <td>Rp {{ item.product.price }}</td>
-                                    <td style="width: 150px;">
-                                        <form method="post" action="{% url 'transactions:cart_update' item.id %}" id="update-form-{{ item.id }}">
-                                            {% csrf_token %}
-                                            <div class="input-group input-group-sm">
-                                                <button type="button" class="btn btn-outline-secondary" onclick="updateCartQuantity('{{ item.id }}', 'decrease')">-</button>
-                                                <input type="number" name="quantity" id="quantity-{{ item.id }}" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" class="form-control text-center">
-                                                <button type="button" class="btn btn-outline-secondary" onclick="updateCartQuantity('{{ item.id }}', 'increase')">+</button>
-                                            </div>
-                                        </form>
-                                    </td>
-                                    <td class="text-end">Rp {{ item.get_cost }}</td>
-                                    <td>
-                                        <form method="post" action="{% url 'transactions:cart_remove' item.id %}" id="remove-form-{{ item.id }}">
-                                            {% csrf_token %}
-                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmRemove('{{ item.id }}', '{{ item.product.name }}')">
-                                                <i class="fas fa-trash"></i> Hapus
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                        <tfoot>
-                            <tr class="table-light">
-                                <td colspan="3" class="text-end"><strong>Total</strong></td>
-                                <td class="text-end"><strong>Rp {{ cart.get_total_price }}</strong></td>
-                                <td></td>
+                                    </div>
+                                </td>
+                                <td>Rp{{ item.price }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>Rp{{ item.get_cost }}</td>
                             </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-end">Total</th>
+                            <th>Rp{{ order.total_price }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
-            <div class="card-footer">
-                <div class="d-flex justify-content-between">
-                    <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Lanjutkan Belanja
-                    </a>
-                    <a href="{% url 'transactions:order_create' %}" class="btn btn-primary">
-                        <i class="fas fa-check"></i> Checkout
-                    </a>
-                </div>
-            </div>
-        </div>
-    {% else %}
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
-                <h4>Keranjang Anda kosong!</h4>
-                <p class="text-muted">Anda belum menambahkan produk apapun ke keranjang belanja.</p>
-                <a href="{% url 'products:product_list' %}" class="btn btn-primary mt-3">
-                    <i class="fas fa-shopping-bag"></i> Mulai Berbelanja
+
+            <div class="mt-4">
+                <a href="{% url 'transactions:order_history' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Riwayat Pesanan
                 </a>
+                
+                {% if order.status == 'pending' or order.status == 'processing' %}
+                    <form method="post" action="{% url 'transactions:cancel_order' order.id %}" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger ms-2">
+                            <i class="fas fa-times"></i> Batalkan Pesanan
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         </div>
-    {% endif %}
+    </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    function updateCartQuantity(itemId, direction) {
-        const quantityElement = document.getElementById(`quantity-${itemId}`);
-        let quantity = parseInt(quantityElement.value);
-        const maxQuantity = parseInt(quantityElement.getAttribute('max'));
-        
-        if (direction === 'increase' && quantity < maxQuantity) {
-            quantity += 1;
-        } else if (direction === 'decrease' && quantity > 1) {
-            quantity -= 1;
-        }
-        
-        quantityElement.value = quantity;
-        document.getElementById(`update-form-${itemId}`).submit();
-    }
-
-    function confirmRemove(itemId, productName) {
-        if (confirm(`Apakah Anda yakin ingin menghapus ${productName} dari keranjang?`)) {
-            document.getElementById(`remove-form-${itemId}`).submit();
-        }
-    }
-</script>
 {% endblock %}

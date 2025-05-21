@@ -1,103 +1,83 @@
 {% extends 'base.html' %}
 
-{% block title %}Checkout | E-Commerce{% endblock %}
+{% block title %}Checkout | KOPAG E-COMMERCE{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container my-4">
     <h2 class="mb-4">Checkout</h2>
     
     <div class="row">
         <div class="col-md-8">
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Alamat Pengiriman</h5>
+                    <h5 class="mb-0">Data Pengiriman</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" id="checkout-form">
                         {% csrf_token %}
                         
-                        <div class="mb-3">
-                            <label for="full_name" class="form-label">Nama Lengkap</label>
-                            {{ form.full_name }}
-                            {% if form.full_name.errors %}
-                                <div class="text-danger">{{ form.full_name.errors }}</div>
-                            {% endif %}
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="full_name" class="form-label">Nama Lengkap</label>
+                                <input type="text" class="form-control" id="full_name" name="full_name" value="{{ form.full_name.value|default:'' }}" required>
+                            </div>
                         </div>
                         
                         <div class="mb-3">
                             <label for="phone" class="form-label">Nomor Telepon</label>
-                            {{ form.phone }}
-                            {% if form.phone.errors %}
-                                <div class="text-danger">{{ form.phone.errors }}</div>
-                            {% endif %}
+                            <input type="text" class="form-control" id="phone" name="phone" value="{{ form.phone.value|default:'' }}" required>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="address" class="form-label">Alamat</label>
-                            {{ form.address }}
-                            {% if form.address.errors %}
-                                <div class="text-danger">{{ form.address.errors }}</div>
-                            {% endif %}
+                            <label for="address" class="form-label">Alamat Lengkap</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required>{{ form.address.value|default:'' }}</textarea>
                         </div>
                         
-                        <div class="row">
+                        <div class="row mb-3">
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="city" class="form-label">Kota</label>
-                                    {{ form.city }}
-                                    {% if form.city.errors %}
-                                        <div class="text-danger">{{ form.city.errors }}</div>
-                                    {% endif %}
-                                </div>
+                                <label for="city" class="form-label">Kota</label>
+                                <input type="text" class="form-control" id="city" name="city" value="{{ form.city.value|default:'' }}" required>
                             </div>
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="province" class="form-label">Provinsi</label>
-                                    {{ form.province }}
-                                    {% if form.province.errors %}
-                                        <div class="text-danger">{{ form.province.errors }}</div>
-                                    {% endif %}
-                                </div>
+                                <label for="province" class="form-label">Provinsi</label>
+                                <input type="text" class="form-control" id="province" name="province" value="{{ form.province.value|default:'' }}" required>
                             </div>
                         </div>
                         
                         <div class="mb-3">
                             <label for="postal_code" class="form-label">Kode Pos</label>
-                            {{ form.postal_code }}
-                            {% if form.postal_code.errors %}
-                                <div class="text-danger">{{ form.postal_code.errors }}</div>
-                            {% endif %}
+                            <input type="text" class="form-control" id="postal_code" name="postal_code" value="{{ form.postal_code.value|default:'' }}" required>
                         </div>
                         
-                        <h5 class="mt-4 mb-3">Metode Pembayaran</h5>
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="payment_transfer" value="transfer" checked>
-                                    <label class="form-check-label" for="payment_transfer">
-                                        Transfer Bank
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="payment_ewallet" value="ewallet">
-                                    <label class="form-check-label" for="payment_ewallet">
-                                        E-Wallet (OVO, GoPay, DANA)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="payment_cod" value="cod">
-                                    <label class="form-check-label" for="payment_cod">
-                                        Cash on Delivery (COD)
-                                    </label>
+                        <div class="mb-4">
+                            <label class="form-label">Metode Pembayaran</label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="payment_transfer" value="transfer" checked>
+                                        <label class="form-check-label" for="payment_transfer">
+                                            Transfer Bank
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="payment_ewallet" value="ewallet">
+                                        <label class="form-check-label" for="payment_ewallet">
+                                            E-Wallet (OVO, GoPay, DANA)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="payment_cod" value="cod">
+                                        <label class="form-check-label" for="payment_cod">
+                                            Cash on Delivery (COD)
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-check-circle"></i> Selesaikan Pesanan
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-shopping-cart"></i> Buat Pesanan
+                        </button>
                     </form>
                 </div>
             </div>
@@ -111,41 +91,43 @@
                 <div class="card-body">
                     {% if cart_items %}
                         <div class="mb-3">
-                            <h6>Produk ({{ cart_items|length }} item)</h6>
-                            <hr>
+                            <h6 class="border-bottom pb-2">Produk ({{ cart_items|length }} item)</h6>
                             {% for item in cart_items %}
                                 <div class="d-flex justify-content-between mb-2">
                                     <div>
-                                        <span>{{ item.product.name }}</span>
-                                        <small class="text-muted d-block">{{ item.quantity }} x Rp{{ item.product.price }}</small>
+                                        <small>{{ item.quantity }}x</small> {{ item.product.name }}
                                     </div>
-                                    <span>Rp{{ item.get_cost }}</span>
+                                    <div>
+                                        Rp{{ item.get_cost }}
+                                    </div>
                                 </div>
                             {% endfor %}
                         </div>
                         
-                        <hr>
-                        
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal</span>
-                            <span>Rp{{ cart.get_total_price }}</span>
+                        <div class="d-flex justify-content-between border-top pt-2">
+                            <strong>Subtotal</strong>
+                            <strong>Rp{{ cart.get_total_price }}</strong>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
+                        
+                        <div class="d-flex justify-content-between">
                             <span>Pengiriman</span>
                             <span>Rp0</span>
                         </div>
                         
-                        <hr>
-                        
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
                             <strong>Total</strong>
                             <strong>Rp{{ cart.get_total_price }}</strong>
                         </div>
                     {% else %}
-                        <div class="alert alert-info">
-                            Keranjang Anda kosong.
+                        <div class="alert alert-warning">
+                            Keranjang belanja Anda kosong.
                         </div>
                     {% endif %}
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{% url 'transactions:cart_detail' %}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Keranjang
+                    </a>
                 </div>
             </div>
         </div>

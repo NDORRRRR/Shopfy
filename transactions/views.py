@@ -80,6 +80,10 @@ def order_create(request):
             order = form.save(commit=False)
             order.user = request.user
             order.total_price = cart.get_total_price()
+            
+            # Simpan metode pembayaran
+            order.payment_method = request.POST.get('payment_method', 'transfer')
+            
             order.save()
             
             # Create order items from cart items
@@ -120,7 +124,7 @@ def order_create(request):
         'cart_items': cart_items,
         'form': form
     })
-
+    
 @login_required
 def order_history(request):
     orders = Order.objects.filter(user=request.user)
