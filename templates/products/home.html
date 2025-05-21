@@ -17,7 +17,7 @@
         <div class="col-md-3 mb-4">
             <div class="card h-100">
                 {% if category.image %}
-                    <img src="{{ category.image.url }}" class="card-img-top" alt="{{ category.name }}">
+                    <img src="{{ category.image.url }}" class="card-img-top" alt="{{ category.name }}" style="height: 200px; object-fit: cover;">
                 {% else %}
                     <div class="card-img-top bg-light text-center py-5">
                         <i class="fas fa-tag fa-4x text-muted"></i>
@@ -43,7 +43,7 @@
         <div class="col-md-3 mb-4">
             <div class="card h-100">
                 {% if product.image %}
-                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
                 {% else %}
                     <div class="card-img-top bg-light text-center py-5">
                         <i class="fas fa-box fa-4x text-muted"></i>
